@@ -5,7 +5,7 @@ public:
     UART_HandleTypeDef huart1;
     uint8_t rx_buf[128] = {0}; // 接收缓冲区
     uint16_t rx_len = 0; // 接收数据长度
-
+UARTChannel() = default;
     /**
      * @brief 构造函数，初始化UART通道
      * @param huart 指向已配置好的UART句柄

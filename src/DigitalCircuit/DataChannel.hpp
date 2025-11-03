@@ -3,7 +3,7 @@
 class I2CChannel {
 public:
     I2C_HandleTypeDef hi2c1;
-
+I2CChannel() = default;
     /**
      * @brief 构造函数，初始化I2C通道
      * @param hi2c 指向已配置好的I2C句柄

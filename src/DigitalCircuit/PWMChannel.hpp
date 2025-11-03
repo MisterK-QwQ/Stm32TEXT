@@ -6,6 +6,7 @@ public:
     TIM_HandleTypeDef htim;
     uint32_t channel;
     TIM_OC_InitTypeDef sConfigOC;
+    PWMChannel() = default;
     /**
      * @brief  构造函数，初始化PWM通道
      * @param tim 已配置好的定时器句柄
@@ -17,7 +18,9 @@ public:
     HAL_TIM_PWM_Init(&htim);
         HAL_TIM_PWM_ConfigChannel(&htim, &sConfigOC, channel);
     };
+
     PWMChannel(const PWMChannel&) = delete;
+
     /**
      * @brief 启动PWM输出
      * @return HAL_StatusTypeDef HAL状态码（HAL_OK表示成功，其他为错误状态）

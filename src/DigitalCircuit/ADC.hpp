@@ -5,6 +5,7 @@ private:
     uint8_t calibrated = 0;
 public:
     ADC_HandleTypeDef hadc;
+    ADCChannel() = default;    
     /**
      * @brief 构造函数，初始化ADC通道
      * @param adc 指向已配置好的ADC句柄（含通道、采样时间等）

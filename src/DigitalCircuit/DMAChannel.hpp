@@ -6,7 +6,7 @@ private:
     volatile uint8_t transfer_complete = 0;  // 传输完成标志位
 public:
     DMA_HandleTypeDef hdma;  // DMA句柄，存储DMA配置信息
-
+    DMAChannel() = default;
     DMAChannel(DMA_HandleTypeDef dma): hdma(dma) {
         HAL_DMA_Init(&hdma);
     };

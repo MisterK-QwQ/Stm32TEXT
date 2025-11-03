@@ -30,6 +30,7 @@ public:
     I2CChannel i2c_channel;
     DMAChannel dma_channel;
     ADCChannel adc_channel;
+
 };
 
 class GpioData {
@@ -55,7 +56,7 @@ public:
      * @brief 添加GPIO引脚配置
      */
     void Add(GPIO_TypeDef* port,const GPIO_InitTypeDef& init, 
-             const Hardware& hardware)
+             const Hardware& hardware=Hardware())
               {
         if (port == nullptr) return;  // 无效参数检查
         GpioKey key = make_key(port, init.Pin);
@@ -80,7 +81,7 @@ public:
         }
         return nullptr;  // 修复原代码未返回的问题
     }
-
+    
     /**
      * @brief 读取指定引脚电平
      */
