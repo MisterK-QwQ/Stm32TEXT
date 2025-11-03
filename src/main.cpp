@@ -5,6 +5,17 @@
 void SysTick_Handler(void) {
   HAL_IncTick(); // 每1ms调用一次
 }
+int i=0;
+
+void OnOpenLedEvent(GpioEvent& event) {
+    if (event.pin == GPIO_PIN_0) {
+        if(i<999)
+            i=0;
+        i+=50;
+
+        event.Data->hardware_info.pwm_channel.SetDuty(i);
+    }
+}
 
 int main(void) {
     if (HAL_Init() != HAL_OK) {
@@ -38,7 +49,7 @@ int main(void) {
     USART1_UART_Init();  //logger USART1初始化
 #endif
     manager->init();
- //   manager->mDispatcher->registerListener<GpioEvent>(OnOpenLedEvent); // 注册事件监听器
+    manager->mDispatcher->registerListener<GpioEvent>(OnOpenLedEvent); // 注册事件监听器
     LogF.logF(LogLevel::INFO,"Initialized");
     while (true) {
         manager->read();     
