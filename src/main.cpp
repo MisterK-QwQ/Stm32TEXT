@@ -23,8 +23,8 @@ int main(void) {
     HAL_Init();
     SystemClock_Config();
 
-    __HAL_RCC_ADC1_CLK_ENABLE();
-    __HAL_RCC_GPIOC_CLK_ENABLE(); 
+   // __HAL_RCC_ADC1_CLK_ENABLE();
+   // __HAL_RCC_GPIOC_CLK_ENABLE(); 
     __HAL_RCC_GPIOA_CLK_ENABLE();
     __HAL_RCC_TIM2_CLK_ENABLE();
 #ifdef _Dog
