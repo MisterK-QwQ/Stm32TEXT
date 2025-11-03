@@ -6,14 +6,17 @@ public:
     uint8_t rx_buf[128] = {0}; // 接收缓冲区
     uint16_t rx_len = 0; // 接收数据长度
 
-    UARTChannel() = default;
+    /**
+     * @brief 构造函数，初始化UART通道
+     * @param huart 指向已配置好的UART句柄
+     * @details 外部需配置UART核心参数（如波特率、数据位等）
+     */
+    UARTChannel(UART_HandleTypeDef huart): huart1(huart) {
+        HAL_UART_Init(&huart1);
+    };
+    
 
     UARTChannel(const UARTChannel&) = delete;
-
-    void UART1_Manual_Init(UART_HandleTypeDef huart) {
-        huart1 = huart;
-        HAL_UART_Init(&huart1);
-    }
 
     /**
      * @brief 发送数据

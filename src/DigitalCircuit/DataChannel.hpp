@@ -4,14 +4,16 @@ class I2CChannel {
 public:
     I2C_HandleTypeDef hi2c1;
 
-    I2CChannel() = default;
+    /**
+     * @brief 构造函数，初始化I2C通道
+     * @param hi2c 指向已配置好的I2C句柄
+     * @details 外部需配置I2C核心参数（如时钟速度、地址模式等）
+     */
+    I2CChannel(I2C_HandleTypeDef hi2c): hi2c1(hi2c) {
+        HAL_I2C_Init(&hi2c1);
+    };
 
     I2CChannel(const I2CChannel&) = delete;
-
-    void I2C1_Manual_Init(I2C_HandleTypeDef hi2c) {
-        hi2c1 = hi2c;
-        HAL_I2C_Init(&hi2c1);
-    }
 
      /**
      * @brief 向I2C从设备指定寄存器写入数据

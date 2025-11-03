@@ -7,14 +7,13 @@ private:
 public:
     DMA_HandleTypeDef hdma;  // DMA句柄，存储DMA配置信息
 
-    DMAChannel(const DMAChannel&) = delete;
-    DMAChannel() = default;
-
-    void DMA_Init(DMA_HandleTypeDef dma) {
-        hdma = dma;  // 拷贝外部配置的DMA句柄到内部
+    DMAChannel(DMA_HandleTypeDef dma): hdma(dma) {
         HAL_DMA_Init(&hdma);
-    }
+    };
     
+    DMAChannel(const DMAChannel&) = delete;
+
+
     /**
      * @brief 启动DMA传输（轮询模式，无中断）
      * @param src 源地址（外设寄存器地址或内存地址）

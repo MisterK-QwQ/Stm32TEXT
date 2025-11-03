@@ -5,21 +5,20 @@ private:
     uint8_t calibrated = 0;
 public:
     ADC_HandleTypeDef hadc;
-
-    ADCChannel() = default;
-    ADCChannel(const ADCChannel&) = delete;
-
-      /**
-     * @brief 初始化ADC通道
+    /**
+     * @brief 构造函数，初始化ADC通道
      * @param adc 指向已配置好的ADC句柄（含通道、采样时间等）
+     * @param sConfig ADC通道配置结构体
      * @details 外部需配置ADC核心参数（如扫描模式、连续转换等）
      */
-    void ADC_Init(ADC_HandleTypeDef* adc,ADC_ChannelConfTypeDef sConfig) {
-        hadc = *adc;
+    ADCChannel(ADC_HandleTypeDef adc,ADC_ChannelConfTypeDef sConfig): hadc(adc) {
         calibrated = 0; // 初始未校准
         HAL_ADC_Init(&hadc);
         HAL_ADC_ConfigChannel(&hadc, &sConfig);
     }
+
+    ADCChannel(const ADCChannel&) = delete;
+
 
     /**
      * @brief ADC校准（提高转换精度） 初始化后需执行一次

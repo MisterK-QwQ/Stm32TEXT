@@ -55,7 +55,8 @@ public:
      * @brief 添加GPIO引脚配置
      */
     void Add(GPIO_TypeDef* port,const GPIO_InitTypeDef& init, 
-             const Hardware& hardware = Hardware()) {
+             const Hardware& hardware)
+              {
         if (port == nullptr) return;  // 无效参数检查
         GpioKey key = make_key(port, init.Pin);
         auto data = std::make_unique<GpioData>();
