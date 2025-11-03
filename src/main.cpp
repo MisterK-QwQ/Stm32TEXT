@@ -13,7 +13,8 @@ void OnOpenLedEvent(GpioEvent& event) {
     }else if (duty == 0) {
         Fduty = 10;
     }
-    LogF.logF(LogLevel::INFO,"Duty:%d",duty);
+    HAL_Delay(100);
+    //LogF.logF(LogLevel::INFO,"Duty:%d",duty);
     event.Data->hardware_info.pwm_channel.SetDuty(duty);
     }
 }
@@ -40,6 +41,7 @@ int main(void) {
 #ifdef _Dog
         HAL_IWDG_Refresh(&Data.hiwdg);  // 喂狗
 #endif
+
      //  LogF.logF(LogLevel::INFO,"Tick");
     }
 }

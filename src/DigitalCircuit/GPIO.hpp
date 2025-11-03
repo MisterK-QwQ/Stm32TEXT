@@ -42,8 +42,9 @@ public:
 
 class GPIO {
 private:
-    std::unordered_map<GpioKey, std::unique_ptr<GpioData>> m_gpio_map;
-
+    static constexpr size_t MAX_GPIO_PINS = 64;  // 最大支持64个引脚
+    std::array<std::unique_ptr<GpioData>, MAX_GPIO_PINS> m_gpio_array;
+    size_t m_count = 0;  // 当前已添加的引脚数量
 public:
     GPIO() = default;
     ~GPIO() = default;
@@ -54,30 +55,31 @@ public:
     /**
      * @brief 添加GPIO引脚配置
      */
-      void Add(GPIO_TypeDef* port,const GPIO_InitTypeDef& init, 
+      void Add(GPIO_TypeDef* port, const GPIO_InitTypeDef& init, 
              const Hardware& hardware = Hardware()) {
-        if (port == nullptr) return;  // 无效参数检查
-        GpioKey key = make_key(port, init.Pin);
+        if (port == nullptr || m_count >= MAX_GPIO_PINS) return;  // 检查容量
+        
         auto data = std::make_unique<GpioData>();
         data->port = port;
         data->init_config = init;
         data->hardware_info = hardware;
         data->initialized = false;
-        m_gpio_map[key] = std::move(data);  // 使用move避免拷贝unique_ptr
+        m_gpio_array[m_count++] = std::move(data);  // 存入数组
     }
 
     /**
      * @brief 获取指定引脚的配置数据
      * @return 找到返回GpioData指针，否则返回nullptr
      */
-    GpioData* GetData(GPIO_TypeDef* port, uint16_t pin) {
+     GpioData* GetData(GPIO_TypeDef* port, uint16_t pin) {
         if (port == nullptr || pin == 0) return nullptr;
-        GpioKey key = make_key(port, pin);
-        auto it = m_gpio_map.find(key);
-        if (it != m_gpio_map.end()) {
-            return it->second.get();  // 返回unique_ptr管理的原始指针
+        for (size_t i = 0; i < m_count; ++i) {
+            auto& data = m_gpio_array[i];
+            if (data && data->port == port && data->init_config.Pin == pin) {
+                return data.get();
+            }
         }
-        return nullptr;  // 修复原代码未返回的问题
+        return nullptr;
     }
 
     /**
@@ -96,11 +98,11 @@ public:
      * @param callback 回调函数，参数为：端口、引脚号、GpioData指针
      */
     void ForEach(const std::function<void(GPIO_TypeDef*, uint16_t, GpioData*)>& callback) {
-        for (const auto& [key, data_ptr] : m_gpio_map) {
-            GPIO_TypeDef* port = nullptr;
-            uint16_t pin = 0;
-            decompose_key(key, port, pin);
-            callback(port, pin, data_ptr.get());
+        for (size_t i = 0; i < m_count; ++i) {
+            auto& data = m_gpio_array[i];
+            if (data) {
+                callback(data->port, data->init_config.Pin, data.get());
+            }
         }
     }
 
@@ -126,14 +128,21 @@ public:
     std::tuple<GPIO_TypeDef*, uint16_t, GpioData*> FindIf(
         const std::function<bool(GPIO_TypeDef*, uint16_t, GpioData*)>& condition
     ) {
-        for (const auto& [key, data_ptr] : m_gpio_map) {
-            GPIO_TypeDef* port = nullptr;
-            uint16_t pin = 0;
-            decompose_key(key, port, pin);
+        // 遍历数组中已添加的有效GPIO（仅遍历到m_count，避免多余操作）
+        for (size_t i = 0; i < m_count; ++i) {
+            const auto& data_ptr = m_gpio_array[i];
+            if (!data_ptr) continue;  // 跳过空元素（理论上m_count内无空元素，保险起见）
+
+            // 直接从GpioData中获取port和pin（无需分解key，效率更高）
+            GPIO_TypeDef* port = data_ptr->port;
+            uint16_t pin = data_ptr->init_config.Pin;
+
+            // 检查条件是否匹配
             if (condition(port, pin, data_ptr.get())) {
                 return {port, pin, data_ptr.get()};
             }
         }
+        // 无匹配项
         return {nullptr, 0, nullptr};
     }
 
