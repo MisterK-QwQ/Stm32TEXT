@@ -8,11 +8,14 @@ void SysTick_Handler(void) {
 int i=0;
 
 void OnOpenLedEvent(GpioEvent& event) {
-    if (event.pin == GPIO_PIN_0) {
+    if (event.pin == GPIO_PIN_13 && event.Port == GPIOC) {
+        if(!event.Initialize){
+            event.Initialize=true;
+            event.Data->hardware_info.pwm_channel.PWM_Start();
+        }
         if(i<999)
             i=0;
         i+=50;
-
         event.Data->hardware_info.pwm_channel.SetDuty(i);
     }
 }
@@ -56,5 +59,6 @@ int main(void) {
 #ifdef _Dog
          HAL_IWDG_Refresh(&Data.hiwdg);  // 喂狗
 #endif
+        HAL_Delay(100); // 主循环延时，避免过度占用CPU
     }
 }

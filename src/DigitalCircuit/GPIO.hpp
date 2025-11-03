@@ -30,7 +30,7 @@ public:
     I2CChannel i2c_channel;
     DMAChannel dma_channel;
     ADCChannel adc_channel;
-
+    Hardware() = default;
 };
 
 class GpioData {
@@ -81,7 +81,7 @@ public:
         }
         return nullptr;  // 修复原代码未返回的问题
     }
-    
+
     /**
      * @brief 读取指定引脚电平
      */

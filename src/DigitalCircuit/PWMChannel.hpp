@@ -6,7 +6,7 @@ public:
     TIM_HandleTypeDef htim;
     uint32_t channel;
     TIM_OC_InitTypeDef sConfigOC;
-    
+
     PWMChannel() = default;
     /**
      * @brief  构造函数，初始化PWM通道
@@ -14,10 +14,10 @@ public:
      * @param ch 定时器通道（如TIM_CHANNEL_1）
      * @note 调用此函数前请确保定时器已正确初始化并配置为PWM模式
      */
-    PWMChannel(TIM_HandleTypeDef tim, TIM_OC_InitTypeDef sConfigOC,uint32_t ch)
-    : htim(tim), sConfigOC(sConfigOC), channel(ch) {
-    HAL_TIM_PWM_Init(&htim);
-        HAL_TIM_PWM_ConfigChannel(&htim, &sConfigOC, channel);
+    PWMChannel(TIM_HandleTypeDef tim, TIM_OC_InitTypeDef sConfigO,uint32_t ch)
+    : htim(tim), sConfigOC(sConfigO), channel(ch) {
+        HAL_TIM_PWM_Init(&tim);
+        HAL_TIM_PWM_ConfigChannel(&htim, &sConfigOC, ch);
     };
 
     PWMChannel(const PWMChannel&) = delete;
