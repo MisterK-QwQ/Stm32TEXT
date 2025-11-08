@@ -197,7 +197,7 @@ public:
                         __HAL_RCC_GPIOB_CLK_ENABLE();
                         clock[1].first=true;
                     }
-                    ++clock[2].second;
+                    ++clock[1].second;
                 }
                 
                 if(data->port==GPIOC){

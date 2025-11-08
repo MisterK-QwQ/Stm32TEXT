@@ -13,7 +13,7 @@ public:
     GPIO gpio;
 
    // UART_HandleTypeDef huart1;
-    std::unique_ptr<EmbeddedEvent::Dispatcher> mDispatcher;
+    EmbeddedEvent::Dispatcher mDispatcher;
 
     void init();
     void read();
@@ -22,4 +22,4 @@ public:
 
 
 };
-extern Manager* manager;
+extern Manager manager;
