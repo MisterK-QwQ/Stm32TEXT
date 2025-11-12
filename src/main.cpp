@@ -3,22 +3,35 @@
 #include "Data/Data.hpp"
 #include "DigitalCircuit/OLED.hpp"
 
+TimerUtil Timer1;
+TimerUtil Timer2;
 
-int LED_PWM = 0; 
 void OnOpenLedEvent(GpioEvent& event) {
     if (event.pin == GPIO_PIN_14 && event.Port == GPIOC) {
         HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, 
-                        (event.state == GPIO_PIN_RESET) ?
-                        GPIO_PIN_RESET : GPIO_PIN_SET);
+                        (event.state == GPIO_PIN_RESET) ? GPIO_PIN_RESET : GPIO_PIN_SET);
     }
-    LED_PWM+=10;
-    if(LED_PWM>=19999) LED_PWM=0;
-    if(event.pin == GPIO_PIN_0 && event.Port == GPIOA) {
-        HAL_Delay(20);
-        event.Data->hardware_info.pwm_channel.SetDuty(LED_PWM);
+    static int ledPwm1 = 0;
+    if (event.pin==GPIO_PIN_0&& event.Port==GPIOA&&Timer1.hasTimedElapsed(150, true)) {
+        ledPwm1+=150;
+        if(ledPwm1>=19999) ledPwm1=0;
+       
+        LogF.logF(LogLevel::INFO,"ledPwm1: %d",ledPwm1);
+        
+
+        event.Data->hardware_info.pwm_channel.SetDuty(ledPwm1);
+    }
+
+    static int ledPwm2 = 19999;
+    if (event.pin==GPIO_PIN_1&& event.Port==GPIOA&&Timer2.hasTimedElapsed(50, true)) {
+        ledPwm2-=150;
+        if(ledPwm2<=0) ledPwm2=19999;
+
+        LogF.logF(LogLevel::INFO,"ledPwm2: %d",ledPwm2);
+
+        event.Data->hardware_info.pwm_channel.SetDuty(ledPwm2);
     }
 }
-
 int main(void) {
     HAL_Init();
     SystemClock_Config();
@@ -50,7 +63,7 @@ int main(void) {
 extern "C" void SysTick_Handler(void){   //每1msTick运行一次
   HAL_IncTick();  
   if(manager.initManager){
-
+    manager.tick=HAL_GetTick();
   }
 }
 

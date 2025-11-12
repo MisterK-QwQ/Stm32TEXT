@@ -1,6 +1,5 @@
 #pragma once
 #include "stm32f1xx.h"
-
 class PWMChannel {
 public:
     TIM_HandleTypeDef htim;
@@ -42,7 +41,7 @@ public:
      */
      void SetDuty(uint16_t duty) {
         sConfigOC.Pulse = duty;
-        HAL_TIM_PWM_ConfigChannel(&htim, &sConfigOC, TIM_CHANNEL_1);
-        HAL_TIM_PWM_Start(&htim, TIM_CHANNEL_1);
+        HAL_TIM_PWM_ConfigChannel(&htim, &sConfigOC, channel);
+        HAL_TIM_PWM_Start(&htim, channel);
     }
 };

@@ -9,6 +9,8 @@
 #include "Math.hpp"
 #include "stm32f1xx_hal.h"
 #include "Time.hpp"
+#include "TimerUtil.hpp"
+
 class Utils {
 public:
  /**

@@ -65,6 +65,35 @@ void Manager::init() {
              },
              TIM_CHANNEL_1 
          )));
+
+    gpio.Add(GPIOA, 
+    {GPIO_PIN_1, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_HIGH}, 
+     Hardware( 
+         PWMChannel(
+             TIM_HandleTypeDef{
+                 .Instance=TIM2,
+                 {
+                     .Prescaler=71, 
+                     .CounterMode=TIM_COUNTERMODE_UP, 
+                     .Period=19999,       // 50Hz
+                     .ClockDivision=TIM_CLOCKDIVISION_DIV1,
+                     .RepetitionCounter= 0,
+                     .AutoReloadPreload=TIM_AUTORELOAD_PRELOAD_DISABLE
+                 },
+                 .Channel = HAL_TIM_ACTIVE_CHANNEL_CLEARED,
+                 .hdma={nullptr},
+                 .Lock=HAL_UNLOCKED,
+                 .State=HAL_TIM_STATE_RESET
+             },
+             TIM_OC_InitTypeDef{
+                 .OCMode=TIM_OCMODE_PWM1, 
+                 .Pulse=1500,        
+                 .OCPolarity=TIM_OCPOLARITY_HIGH,
+                 .OCNPolarity=0, 
+                 .OCFastMode=TIM_OCFAST_DISABLE,
+             },
+             TIM_CHANNEL_2
+         )));
     //LOG
     gpio.Add(GPIOA, {GPIO_PIN_9, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_HIGH});   // USART1_TX
     gpio.Add(GPIOA, {GPIO_PIN_10, GPIO_MODE_AF_INPUT, GPIO_NOPULL, GPIO_SPEED_FREQ_HIGH});    // USART1_RX

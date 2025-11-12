@@ -11,7 +11,7 @@ public:
 
     bool initManager=false;
     GPIO gpio;
-
+    uint32_t tick=0;
    // UART_HandleTypeDef huart1;
     EmbeddedEvent::Dispatcher mDispatcher;
 
