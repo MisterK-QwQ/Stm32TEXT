@@ -331,5 +331,5 @@ private:
         pwm_duty = static_cast<uint16_t>(duty_cycle * pwm_resolution);
     }
 };
+}
 
-}  // namespace MathTools

@@ -28,7 +28,7 @@ bool USART1_UART_Init(void) {
 bool IWDG_Init(){
   Data.hiwdg.Instance = IWDG;  // 指定看门狗实例（独立看门狗只有IWDG）
   Data.hiwdg.Init.Prescaler = IWDG_PRESCALER_256;
-  Data.hiwdg.Init.Reload = 312;
+  Data.hiwdg.Init.Reload = 2343;  //Reload + 1 = (15 × 40000) ÷ 256 = 600000 ÷ 256 = 2343.75
   
   if (HAL_IWDG_Init(&Data.hiwdg) != HAL_OK) {
     LogF.logF(LogLevel::ERROR,"IWDG Initialization Failed");

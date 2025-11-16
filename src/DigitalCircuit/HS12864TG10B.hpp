@@ -20,22 +20,21 @@ public:
     void refreshScreen();
     void setInverseDisplay(bool v);
     void drawCircle8Points(uint8_t x0, uint8_t y0, uint8_t x, uint8_t y, uint8_t color) ;
+    void showCustomChar(uint8_t x, uint8_t y, const uint8_t* charData,uint8_t line=8,uint8_t row=8,uint8_t color=1);
     // 显示8x8 ASCII字符（x：列0-127，y：行0-7，color：0=黑，1=白）
-    void showAscii(uint8_t x, uint8_t y, char ch, uint8_t color);
+    void showAscii(uint8_t x, uint8_t y, char ch,uint8_t line=8,uint8_t row=8, uint8_t color=1);
     uint8_t reverseBit(uint8_t data);
-    void showAsciiStr(uint8_t x, uint8_t y, const char* str, uint8_t color);
+    void showAsciiStr(uint8_t x, uint8_t y, const char* str,uint8_t Spacing=8,uint8_t line=8,uint8_t row=8,uint8_t color=1);
     // 画点（x：0-127，y：0-63，color：0=黑，1=白）
     void drawPoint(uint8_t x, uint8_t y, uint8_t color);
-    //画垂直直线
-    void drawVerticalLine(uint8_t y1, uint8_t y2, uint8_t color);
     // 画斜直线（x1,y1：起点；x2,y2：终点；color：颜色）
-    void drawLine(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint8_t color);
+    void drawLine(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint8_t color=1);
     // 画三角形（x1,y1/x2,y2/x3,y3：三个顶点；color：颜色）
-    void drawTriangle(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint8_t x3, uint8_t y3, uint8_t color);
+    void drawTriangle(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint8_t x3, uint8_t y3, uint8_t color=1);
 
-    void drawRect(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint8_t color, bool fill);
-
-    void drawCircle(uint8_t x0, uint8_t y0, uint8_t r, uint8_t color);
+    void drawRect(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2,bool fill=false, uint8_t color=1);
+    void fillCircle(int x0, int y0, int r, int color);
+    void drawCircle(uint8_t x0, uint8_t y0, uint8_t r, uint8_t color=1);
 private:
     GPIO_TypeDef* scl_port_;  // SPI_SCL引脚（PA5）
     uint16_t scl_pin_;
@@ -58,6 +57,5 @@ private:
 
    uint8_t lcd_buffer[LCD_PAGE][LCD_WIDTH] = {0};  // 现在仅1024字节
     static const uint8_t ascii8x8[];                // 8x8 ASCII字库
-    static const uint8_t chinese16x16[][32];        // 16x16汉字库（每个汉字32字节）
-    static const uint16_t chineseCode[];            // 汉字内码表（与chinese16x16对应）
+
 };
