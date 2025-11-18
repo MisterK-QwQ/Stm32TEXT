@@ -1,6 +1,9 @@
 #include "Manager/Manager.hpp"
 #include "Utils/Utils.hpp"
 #include "Data/Data.hpp"
+#include "Manager/World.hpp"
+uint8_t ren[24]= {0x1c,0x00,0x22,0x00,0x1c,0x00,0x08,0x00,0x1c,0x00,0x2a,0x00,0x2a,0x00,0x08,0x00,0x14,0x00,0x14,0x00,0x14,0x00,0x14,0x00};
+
 int main(void) {
     HAL_Init();
     SystemClock_Config();
@@ -15,11 +18,9 @@ int main(void) {
     HAL_GPIO_WritePin(GPIOB,GPIO_PIN_0,GPIO_PIN_SET);
     manager.LDC.init();
 
-    manager.LDC.drawLine(10, 15, 118, 15, 1);          // 顶部水平线
-    manager.LDC.drawRect(20, 20, 108, 45, false, 1);   // 边框矩形
-    manager.LDC.drawCircle(64, 32, 15, 1);             // 中心圆
-    manager.LDC.drawTriangle(64, 20, 49, 35, 79, 35, 1); // 圆内三角形
-    
+    GWorld.addEntity({20,(float)GWorld.Ground+1},{2,8},Type::Character,ren);
+
+
     LogF.logF(LogLevel::INFO,"Gpio Size:%d GPIOA:%d GPIOB:%d GPIOC:%d"
         ,manager.gpio.GetGpioSize()
         ,manager.gpio.clock[0].second
@@ -33,6 +34,7 @@ int main(void) {
 #ifdef _Dog
         HAL_IWDG_Refresh(&Data.hiwdg);  // 喂狗
 #endif
+    GWorld.upload();
     }
 }
 extern "C" void SysTick_Handler(void){   //每1msTick运行一次
