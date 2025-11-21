@@ -2,8 +2,16 @@
 #include "Utils/Utils.hpp"
 #include "Data/Data.hpp"
 #include "Manager/World.hpp"
-uint8_t ren[24]= {0x1c,0x00,0x22,0x00,0x1c,0x00,0x08,0x00,0x1c,0x00,0x2a,0x00,0x2a,0x00,0x08,0x00,0x14,0x00,0x14,0x00,0x14,0x00,0x14,0x00};
 
+uint8_t playerShape[24] = {
+   0x1c,0x22,0x22,0x1c,0x08,0x1c,0x2a,0x2a,0x08,0x14,0x14,0x14
+};
+
+
+uint8_t obstacleShape[8] = {
+    0xff,0xff,0xff,0xff,
+    0xff,0xff,0xff,0xff
+};
 int main(void) {
     HAL_Init();
     SystemClock_Config();
@@ -17,9 +25,10 @@ int main(void) {
     LogF.logF(LogLevel::INFO,"Initialized");
     HAL_GPIO_WritePin(GPIOB,GPIO_PIN_0,GPIO_PIN_SET);
     manager.LDC.init();
-
-    GWorld.addEntity({20,(float)GWorld.Ground+1},{2,8},Type::Character,ren);
-
+   // manager.LDC.showCustomChar(20,20,playerShape,12,9);
+    GWorld.addEntity({20, (float)GWorld.groundY-12}, {8, 12}, Type::Character, playerShape);
+    GWorld.addEntity({100, (float)GWorld.groundY - 4}, {4, 4}, Type::obstacle, obstacleShape);
+   // GWorld.addEntity({100, (float)GWorld.groundY - 4}, {4, 4}, Type::obstacle, obstacleShape);
 
     LogF.logF(LogLevel::INFO,"Gpio Size:%d GPIOA:%d GPIOB:%d GPIOC:%d"
         ,manager.gpio.GetGpioSize()
@@ -34,7 +43,15 @@ int main(void) {
 #ifdef _Dog
         HAL_IWDG_Refresh(&Data.hiwdg);  // 喂狗
 #endif
-    GWorld.upload();
+    if (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13) == GPIO_PIN_RESET) {
+        for (auto& entity : GWorld.entities) {
+            if (entity.type == Type::Character && entity.isOnGround) {
+                entity.jump(180.0f);
+                break;
+            }
+        }
+    }
+    GWorld.update();
     }
 }
 extern "C" void SysTick_Handler(void){   //每1msTick运行一次

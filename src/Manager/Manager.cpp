@@ -47,7 +47,7 @@ void Manager::init() {
     gpio.Add(GPIOA, {GPIO_PIN_9, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_HIGH});   // USART1_TX
     gpio.Add(GPIOA, {GPIO_PIN_10, GPIO_MODE_AF_INPUT, GPIO_NOPULL, GPIO_SPEED_FREQ_HIGH});    // USART1_RX
 
-
+    gpio.Add(GPIOC, {GPIO_PIN_13, GPIO_MODE_INPUT, GPIO_NOPULL, GPIO_SPEED_FREQ_LOW});  // 跳跃键
     gpio.InitAll();
     initManager=true;
 }
