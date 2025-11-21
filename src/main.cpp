@@ -51,7 +51,7 @@ int main(void) {
             }
         }
     }
-    GWorld.upload();
+    GWorld.update();
     }
 }
 extern "C" void SysTick_Handler(void){   //每1msTick运行一次
