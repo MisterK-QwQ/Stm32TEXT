@@ -14,7 +14,7 @@
 #define MIN3(a, b, c) MIN2(MIN2(a, b), c)
 #define MIN4(a, b, c, d) MIN2(MIN3(a, b, c), d)
 
-#define MIN(...) ({ \
+#define Min(...) ({ \
     __typeof__((__VA_ARGS__)) _arr[] = {__VA_ARGS__}; \
     __typeof__((__VA_ARGS__)) _min = _arr[0]; \
     for (size_t i = 1; i < sizeof(_arr)/sizeof(_arr[0]); i++) { \
@@ -22,6 +22,9 @@
     } \
     _min; \
 })
+
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+#define MIN(a, b) (((a) < (b)) ? (a) : (b))
 
 class Utils {
 public:

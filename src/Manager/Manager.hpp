@@ -5,8 +5,6 @@
 class Manager{
 public:
     HS12864TG10B LDC=HS12864TG10B(
-        GPIOA, GPIO_PIN_5,  // SCL
-        GPIOA, GPIO_PIN_7,  // SDA
         GPIOA, GPIO_PIN_2,  // A0
         GPIOA, GPIO_PIN_3,  // CS
         GPIOA, GPIO_PIN_4   // RES

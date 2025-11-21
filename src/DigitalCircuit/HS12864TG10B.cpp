@@ -103,13 +103,16 @@ const uint8_t HS12864TG10B::ascii8x8[] = {
 0x00,0x00,0x00,0x4c,0x32,0x00,0x00,0x00 //"~"
 };
 
-HS12864TG10B::HS12864TG10B(GPIO_TypeDef* scl_port, uint16_t scl_pin,
-                           GPIO_TypeDef* sda_port, uint16_t sda_pin,
+struct DirtyArea {
+    uint8_t min_x, max_x;  // 变化的列范围
+    uint8_t min_page, max_page;  // 变化的页范围
+} dirtyArea;
+
+HS12864TG10B::HS12864TG10B(
                            GPIO_TypeDef* a0_port,  uint16_t a0_pin,
                            GPIO_TypeDef* cs_port,  uint16_t cs_pin,
                            GPIO_TypeDef* res_port, uint16_t res_pin)
-    : scl_port_(scl_port), scl_pin_(scl_pin),
-      sda_port_(sda_port), sda_pin_(sda_pin),
+    :
       a0_port_(a0_port), a0_pin_(a0_pin),
       cs_port_(cs_port), cs_pin_(cs_pin),
       res_port_(res_port), res_pin_(res_pin) {}
@@ -169,29 +172,18 @@ uint8_t HS12864TG10B::reverseBit(uint8_t data) {
 
 void HS12864TG10B::writeCmd(uint8_t cmd) {
     HAL_GPIO_WritePin(cs_port_, cs_pin_, GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(a0_port_, a0_pin_, GPIO_PIN_RESET);  // A0=0：指令模式
-    for (uint8_t i = 0; i < 8; i++) {
-        writeBit((cmd >> (7 - i)) & 0x01);  // 高位先传
-    }
+    HAL_GPIO_WritePin(a0_port_, a0_pin_, GPIO_PIN_RESET);  // 指令模式
+    HAL_SPI_Transmit(&spi_.hspi1, &cmd, 1, 100);
     HAL_GPIO_WritePin(cs_port_, cs_pin_, GPIO_PIN_SET);
-}
-
-void HS12864TG10B::writeBit(uint8_t bit) {
-    HAL_GPIO_WritePin(sda_port_, sda_pin_, bit ? GPIO_PIN_SET : GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(scl_port_, scl_pin_, GPIO_PIN_SET);
-    HAL_GPIO_WritePin(scl_port_, scl_pin_, GPIO_PIN_RESET);
 }
 
 void HS12864TG10B::writeData(uint8_t dat) {
     HAL_GPIO_WritePin(cs_port_, cs_pin_, GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(a0_port_, a0_pin_, GPIO_PIN_SET);    // A0=1：数据模式
-    for (uint8_t i = 0; i < 8; i++) {
-        writeBit((dat >> (7 - i)) & 0x01);  // 高位先传
-    }
+    HAL_GPIO_WritePin(a0_port_, a0_pin_, GPIO_PIN_SET);    // 数据模式
+    HAL_SPI_Transmit(&spi_.hspi1, &dat, 1, 100);
     HAL_GPIO_WritePin(cs_port_, cs_pin_, GPIO_PIN_SET);
 }
 
-// ==================== 硬件复位 ====================
 void HS12864TG10B::hardwareReset() {
     HAL_GPIO_WritePin(res_port_, res_pin_, GPIO_PIN_RESET);
     HAL_Delay(20);  // 复位脉冲≥2us
@@ -199,7 +191,6 @@ void HS12864TG10B::hardwareReset() {
     HAL_Delay(100); // 复位后稳定
 }
 
-// ==================== 光标与地址控制 ====================
 void HS12864TG10B::setCursor(uint8_t x, uint8_t y) {
     if (x >= LCD_WIDTH || y >= LCD_PAGE) return;
     writeCmd(0xB0 + y);                  // 页地址（0~7）
@@ -269,13 +260,34 @@ void HS12864TG10B::showAsciiStr(uint8_t x, uint8_t y, const char* str, uint8_t s
     refreshScreen();
 }
 
+void HS12864TG10B::refreshPage(uint8_t page) {
+    setCursor(0, page);
+    HAL_GPIO_WritePin(cs_port_, cs_pin_, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(a0_port_, a0_pin_, GPIO_PIN_SET);
+    HAL_SPI_Transmit(&spi_.hspi1, lcd_buffer[page], LCD_WIDTH, 100);
+    HAL_GPIO_WritePin(cs_port_, cs_pin_, GPIO_PIN_SET);
+}
+
 void HS12864TG10B::refreshScreen() {
     for (uint8_t page = 0; page < LCD_PAGE; page++) {  
-        setCursor(0, page);  // 定位到当前页第0列
-        for (uint8_t x = 0; x < LCD_WIDTH; x++) {
-            writeData(lcd_buffer[page][x]);  // 写入整页数据
-        }
+        setCursor(0, page);
+        HAL_GPIO_WritePin(cs_port_, cs_pin_, GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(a0_port_, a0_pin_, GPIO_PIN_SET);
+        HAL_SPI_Transmit(&spi_.hspi1, lcd_buffer[page], LCD_WIDTH, 100);
+        HAL_GPIO_WritePin(cs_port_, cs_pin_, GPIO_PIN_SET);
     }
+}
+
+void HS12864TG10B::refreshDirtyArea() {
+    for (uint8_t page = dirtyArea.min_page; page <= dirtyArea.max_page; page++) {
+        setCursor(dirtyArea.min_x, page);
+        HAL_GPIO_WritePin(cs_port_, cs_pin_, GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(a0_port_, a0_pin_, GPIO_PIN_SET);
+        uint16_t len = dirtyArea.max_x - dirtyArea.min_x + 1;
+        HAL_SPI_Transmit(&spi_.hspi1, &lcd_buffer[page][dirtyArea.min_x], len, 100);
+        HAL_GPIO_WritePin(cs_port_, cs_pin_, GPIO_PIN_SET);
+    }
+    dirtyArea = {LCD_WIDTH, 0, LCD_PAGE, 0};
 }
 
 void HS12864TG10B::drawPoint(uint8_t x, uint8_t y, uint8_t color) {
@@ -289,6 +301,10 @@ void HS12864TG10B::drawPoint(uint8_t x, uint8_t y, uint8_t color) {
     } else {
         lcd_buffer[page][x] &= ~(1 << offset);
     }
+    dirtyArea.min_x = std::min(dirtyArea.min_x, x);
+    dirtyArea.max_x = std::max(dirtyArea.max_x, x);
+    dirtyArea.min_page = std::min(dirtyArea.min_page, page);
+    dirtyArea.max_page = std::max(dirtyArea.max_page, page);
 }
 
 void HS12864TG10B::drawLine(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint8_t color) {
@@ -390,7 +406,7 @@ void HS12864TG10B::fillCircle(int x0, int y0, int r, int color) {
     }
 }
 void HS12864TG10B::drawCircle(uint8_t x0, uint8_t y0, uint8_t r, uint8_t color) {
-    uint8_t max_r = MIN(x0, 127 - x0, y0, 63 - y0);
+    uint8_t max_r = Min(x0, 127 - x0, y0, 63 - y0);
     if (r > max_r) r = max_r;
     if (r == 0) return;
 
